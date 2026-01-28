@@ -1,149 +1,178 @@
 ﻿using LibraryManager;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
-class Program
+namespace LibraryManager
 {
-    static async Task Main()
+    internal class Program
     {
-        var repo = new RepozytoriumJson("library.json");
-        var biblioteka = new Biblioteka();
-
-        foreach (var k in await repo.LoadAsync())
-            biblioteka.DodajKsiazke(k);
-
-        if (!biblioteka.Ksiazki.Any())
-            Seed(biblioteka);
-
-        var ksiazki = new SerwisKsiazek(biblioteka);
-        var wypozyczenia = new SerwisWypozyczen(biblioteka);
-        var raporty = new SerwisRaportow(biblioteka);
-
-        while (true)
+        static async Task Main()
         {
-            Menu();
-            var op = Console.ReadLine();
+            
+            var repoKsiazki = new RepozytoriumJson<Ksiazka>("BibliotekaKsiazka.json");
+            var repoCzytelnicy = new RepozytoriumJson<Czytelnik>("BibliotekaUser.json");
 
-            switch (op)
+            
+            var biblioteka = new Biblioteka();
+
+            biblioteka.Ksiazki.AddRange(await repoKsiazki.LoadAsync());
+            biblioteka.Czytelnicy.AddRange(await repoCzytelnicy.LoadAsync());
+
+            biblioteka.OdbudujLiczniki(); 
+
+
+
+            var serwisKsiazek = new SerwisKsiazek(biblioteka);
+            var serwisWypozyczen = new SerwisWypozyczen(biblioteka);
+            var serwisRaportow = new SerwisRaportow(biblioteka);
+
+            bool exit = false;
+
+            while (!exit)
             {
-                case "1": DodajKsiazke(ksiazki); break;
-                case "2": PokazKsiazki(biblioteka); break;
-                case "3": Szukaj(ksiazki); break;
-                case "4": DodajCzytelnika(biblioteka); break;
-                case "5": Wypozycz(wypozyczenia); break;
-                case "6": Zwroc(wypozyczenia); break;
-                case "7": Raport(raporty); break;
-                case "0":
-                    await repo.SaveAsync(biblioteka.Ksiazki);
-                    return;
+                Menu();
+                Console.Write("Wybór: ");
+                var wybor = Console.ReadLine();
+
+                switch (wybor)
+                {
+                    case "1":
+                        DodajKsiazke(serwisKsiazek);
+                        break;
+
+                    case "2":
+                        PokazKsiazki(biblioteka);
+                        break;
+
+                    case "3":
+                        DodajCzytelnika(biblioteka);
+                        break;
+
+                    case "4":
+                        PokazCzytelnikow(biblioteka);
+                        break;
+
+                    case "5":
+                        Wypozycz(serwisWypozyczen);
+                        break;
+
+                    case "6":
+                        Zwroc(serwisWypozyczen);
+                        break;
+
+                    case "7":
+                        Raport(serwisRaportow);
+                        break;
+
+                    case "8":
+                        await repoKsiazki.SaveAsync(biblioteka.Ksiazki);
+                        await repoCzytelnicy.SaveAsync(biblioteka.Czytelnicy);
+                        Console.WriteLine("✔ Zapisano dane");
+                        break;
+
+                    case "0":
+                        exit = true;
+                        break;
+                }
             }
         }
-    }
 
-    static void Menu()
-    {
-        Console.WriteLine("\n1. Dodaj książkę");
-        Console.WriteLine("2. Wyświetl książki");
-        Console.WriteLine("3. Szukaj");
-        Console.WriteLine("4. Dodaj czytelnika");
-        Console.WriteLine("5. Wypożycz");
-        Console.WriteLine("6. Zwróć");
-        Console.WriteLine("7. Raport");
-        Console.WriteLine("0. Wyjście");
-        Console.Write("> ");
-    }
-
-    static void DodajKsiazke(SerwisKsiazek s)
-    {
-        Console.Write("Tytuł: ");
-        var t = Console.ReadLine() ?? "";
-
-        Console.Write("Autor: ");
-        var a = Console.ReadLine() ?? "";
-
-        Console.Write("Rok: ");
-        int.TryParse(Console.ReadLine(), out int r);
-
-        s.Dodaj(new Ksiazka { Tytul = t, Autor = a, RokWydania = r });
-    }
-
-    static void PokazKsiazki(Biblioteka b)
-    {
-        foreach (var k in b.Ksiazki)
-            Console.WriteLine(k);
-    }
-
-    static void Szukaj(SerwisKsiazek s)
-    {
-        Console.Write("Szukaj: ");
-        foreach (var k in s.Szukaj(Console.ReadLine()))
-            Console.WriteLine(k);
-    }
-
-    static void DodajCzytelnika(Biblioteka b)
-    {
-        Console.Write("Imię: ");
-        var im = Console.ReadLine() ?? "";
-
-        Console.Write("Nazwisko: ");
-        var na = Console.ReadLine() ?? "";
-
-        Console.Write("Email: ");
-        var em = Console.ReadLine() ?? "";
-
-        Console.Write("Telefon: ");
-        var tel = Console.ReadLine() ?? "";
-
-        b.DodajCzytelnika(new Czytelnik
+        static void Menu()
         {
-            Imie = im,
-            Nazwisko = na,
-            Email = em,
-            Telefon = tel
-        });
-    }
+            Console.WriteLine("\n--- MENU ---");
+            Console.WriteLine("1. Dodaj książkę");
+            Console.WriteLine("2. Wyświetl książki");
+            Console.WriteLine("3. Dodaj czytelnika");
+            Console.WriteLine("4. Wyświetl czytelników");
+            Console.WriteLine("5. Wypożycz książkę");
+            Console.WriteLine("6. Zwróć książkę");
+            Console.WriteLine("7. Raport");
+            Console.WriteLine("8. Zapisz dane");
+            Console.WriteLine("0. Wyjście");
+        }
 
-    static void Wypozycz(SerwisWypozyczen s)
-    {
-        Console.Write("ID książki: ");
-        int.TryParse(Console.ReadLine(), out int k);
-
-        Console.Write("ID czytelnika: ");
-        int.TryParse(Console.ReadLine(), out int c);
-
-        Console.WriteLine(s.Wypozycz(k, c) ? "OK" : "Błąd");
-    }
-
-    static void Zwroc(SerwisWypozyczen s)
-    {
-        Console.Write("ID książki: ");
-        int.TryParse(Console.ReadLine(), out int k);
-
-        Console.Write("ID czytelnika: ");
-        int.TryParse(Console.ReadLine(), out int c);
-
-        Console.WriteLine(s.Zwroc(k, c) ? "OK" : "Błąd");
-    }
-
-    static void Raport(SerwisRaportow r)
-    {
-        foreach (var k in r.Top(5))
-            Console.WriteLine($"{k} — {k.LiczbaWypozyczen}");
-    }
-
-    static void Seed(Biblioteka b)
-    {
-        b.DodajKsiazke(new Ksiazka
+        static void DodajKsiazke(SerwisKsiazek serwis)
         {
-            Tytul = "Lalka",
-            Autor = "Bolesław Prus",
-            RokWydania = 1890
-        });
+            Console.Write("Tytuł: ");
+            var tytul = Console.ReadLine();
 
-        b.DodajCzytelnika(new Czytelnik
+            Console.Write("Autor: ");
+            var autor = Console.ReadLine();
+
+            Console.Write("Rok wydania: ");
+            int.TryParse(Console.ReadLine(), out int rok);
+
+            serwis.Dodaj(new Ksiazka
+            {
+                Tytul = tytul,
+                Autor = autor,
+                RokWydania = rok
+            });
+        }
+
+        static void PokazKsiazki(Biblioteka b)
         {
-            Imie = "Jan",
-            Nazwisko = "Kowalski",
-            Email = "jan.k@example.com",
-            Telefon = "600000000"
-        });
+            foreach (var k in b.Ksiazki)
+                Console.WriteLine(k);
+        }
+
+        static void DodajCzytelnika(Biblioteka b)
+        {
+            Console.Write("Imię: ");
+            var imie = Console.ReadLine();
+
+            Console.Write("Nazwisko: ");
+            var nazwisko = Console.ReadLine();
+
+            Console.Write("Email: ");
+            var email = Console.ReadLine();
+
+            Console.Write("Telefon: ");
+            var tel = Console.ReadLine();
+
+            b.DodajCzytelnika(new Czytelnik
+            {
+                Imie = imie,
+                Nazwisko = nazwisko,
+                Email = email,
+                Telefon = tel
+            });
+        }
+
+        static void PokazCzytelnikow(Biblioteka b)
+        {
+            foreach (var c in b.Czytelnicy)
+                Console.WriteLine(c);
+        }
+
+        static void Wypozycz(SerwisWypozyczen s)
+        {
+            Console.Write("ID książki: ");
+            int.TryParse(Console.ReadLine(), out int k);
+
+            Console.Write("ID czytelnika: ");
+            int.TryParse(Console.ReadLine(), out int c);
+
+            Console.WriteLine(s.Wypozycz(k, c) ? "✔ Wypożyczono" : "✖ Błąd");
+        }
+
+        static void Zwroc(SerwisWypozyczen s)
+        {
+            Console.Write("ID książki: ");
+            int.TryParse(Console.ReadLine(), out int k);
+
+            Console.Write("ID czytelnika: ");
+            int.TryParse(Console.ReadLine(), out int c);
+
+            Console.WriteLine(s.Zwroc(k, c) ? "✔ Zwrócono" : "✖ Błąd");
+        }
+
+        static void Raport(SerwisRaportow r)
+        {
+            Console.WriteLine("TOP wypożyczane:");
+            foreach (var k in r.TopWypozyczane(5))
+                Console.WriteLine($"{k.Tytul} — {k.LiczbaWypozyczen}");
+        }
     }
 }

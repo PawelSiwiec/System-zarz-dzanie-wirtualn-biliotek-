@@ -20,7 +20,6 @@ public class SerwisWypozyczen
         k.Wypozyczona = true;
         k.LiczbaWypozyczen++;
         c.WypozyczoneKsiazki.Add(k.Id);
-
         return true;
     }
 
@@ -32,12 +31,8 @@ public class SerwisWypozyczen
         if (k == null || c == null)
             return false;
 
-        if (!c.WypozyczoneKsiazki.Contains(k.Id))
-            return false;
-
         k.Wypozyczona = false;
         c.WypozyczoneKsiazki.Remove(k.Id);
-
         return true;
     }
 }

@@ -2,32 +2,32 @@
 
 namespace LibraryManager;
 
-public class RepozytoriumJson :
-    ILoader<List<Ksiazka>>,
-    ISaver<List<Ksiazka>>
+public class RepozytoriumJson<T> : ILoader<List<T>>, ISaver<List<T>>
 {
-    private readonly string _sciezka;
+    private readonly string _plik;
 
-    public RepozytoriumJson(string sciezka)
+    public RepozytoriumJson(string plik)
     {
-        _sciezka = sciezka;
+        _plik = plik;
     }
 
-    public async Task<List<Ksiazka>> LoadAsync()
+    public async Task<List<T>> LoadAsync()
     {
-        if (!File.Exists(_sciezka))
-            return new List<Ksiazka>();
+        if (!File.Exists(_plik))
+            return new List<T>();
 
-        using var s = File.OpenRead(_sciezka);
-        return await JsonSerializer.DeserializeAsync<List<Ksiazka>>(s)
-               ?? new List<Ksiazka>();
+        using var stream = File.OpenRead(_plik);
+        return await JsonSerializer.DeserializeAsync<List<T>>(stream)
+               ?? new List<T>();
     }
 
-    public async Task SaveAsync(List<Ksiazka> data)
+    public async Task SaveAsync(List<T> data)
     {
-        using var s = File.Create(_sciezka);
+        using var stream = File.Create(_plik);
         await JsonSerializer.SerializeAsync(
-            s, data,
-            new JsonSerializerOptions { WriteIndented = true });
+            stream,
+            data,
+            new JsonSerializerOptions { WriteIndented = true }
+        );
     }
 }

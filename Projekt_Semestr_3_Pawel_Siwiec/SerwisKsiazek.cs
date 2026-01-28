@@ -9,18 +9,12 @@ public class SerwisKsiazek
         _biblioteka = biblioteka;
     }
 
-    public void Dodaj(Ksiazka k)
+    public void Dodaj(Ksiazka ksiazka)
     {
-        _biblioteka.DodajKsiazke(k);
-    }
+        ksiazka.Id = _biblioteka.Ksiazki.Any()
+            ? _biblioteka.Ksiazki.Max(k => k.Id) + 1
+            : 1;
 
-    public IEnumerable<Ksiazka> Szukaj(string tekst)
-    {
-        tekst = (tekst ?? "").ToLower();
-
-        return _biblioteka.Ksiazki
-            .Where(k =>
-                k.Tytul.ToLower().Contains(tekst) ||
-                k.Autor.ToLower().Contains(tekst));
+        _biblioteka.Ksiazki.Add(ksiazka);
     }
 }

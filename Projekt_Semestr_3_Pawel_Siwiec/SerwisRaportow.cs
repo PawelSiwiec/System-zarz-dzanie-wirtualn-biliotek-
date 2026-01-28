@@ -9,7 +9,7 @@ public class SerwisRaportow
         _biblioteka = biblioteka;
     }
 
-    public IEnumerable<Ksiazka> Top(int ile)
+    public IEnumerable<Ksiazka> TopWypozyczane(int ile)
     {
         return _biblioteka.Ksiazki
             .OrderByDescending(k => k.LiczbaWypozyczen)

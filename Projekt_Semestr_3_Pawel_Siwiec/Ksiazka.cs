@@ -9,7 +9,7 @@ public class Ksiazka : PozycjaBiblioteczna
 
     public override string ToString()
     {
-        return $"{Id}. {Tytul} — {Autor} ({RokWydania})" +
+        return $"[{Id}] {Tytul} — {Autor} ({RokWydania})" +
                (Wypozyczona ? " [WYPOŻYCZONA]" : "");
     }
 }
