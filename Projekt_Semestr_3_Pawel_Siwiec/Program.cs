@@ -68,7 +68,7 @@ namespace LibraryManager
                     case "8":
                         await repoKsiazki.SaveAsync(biblioteka.Ksiazki);
                         await repoCzytelnicy.SaveAsync(biblioteka.Czytelnicy);
-                        Console.WriteLine("✔ Zapisano dane");
+                        Console.WriteLine("Zapisano dane");
                         break;
 
                     case "0":
@@ -154,7 +154,7 @@ namespace LibraryManager
             Console.Write("ID czytelnika: ");
             int.TryParse(Console.ReadLine(), out int c);
 
-            Console.WriteLine(s.Wypozycz(k, c) ? "✔ Wypożyczono" : "✖ Błąd");
+            Console.WriteLine(s.Wypozycz(k, c) ? "Wypożyczono" : "Błąd");
         }
 
         static void Zwroc(SerwisWypozyczen s)
@@ -165,7 +165,7 @@ namespace LibraryManager
             Console.Write("ID czytelnika: ");
             int.TryParse(Console.ReadLine(), out int c);
 
-            Console.WriteLine(s.Zwroc(k, c) ? "✔ Zwrócono" : "✖ Błąd");
+            Console.WriteLine(s.Zwroc(k, c) ? "Zwrócono" : "Błąd");
         }
 
         static void Raport(SerwisRaportow r)
